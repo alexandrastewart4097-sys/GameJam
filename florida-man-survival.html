@@ -1,0 +1,466 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>Florida Man Survival</title>
+<style>
+  :root{
+    --pink:#FF5C8A; --orange:#FFA94D; --teal:#17B3A3; --green:#2E5E3A;
+    --sand:#FFF3D6; --dusk:#2B1B3D; --white:#FFFDF7;
+  }
+  *{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
+  html,body{height:100%;overflow:hidden;background:var(--dusk);
+    font-family:-apple-system,"SF Pro Rounded","Segoe UI",system-ui,sans-serif;
+    touch-action:none;user-select:none;-webkit-user-select:none;}
+  #wrap{position:relative;width:100%;height:100%;max-width:520px;margin:0 auto;overflow:hidden;}
+  canvas{position:absolute;inset:0;width:100%;height:100%;display:block;}
+
+  /* ---------- HUD ---------- */
+  #hud{position:absolute;top:0;left:0;right:0;display:flex;justify-content:space-between;
+    align-items:flex-start;padding:12px 14px;pointer-events:none;z-index:5;}
+  .pill{background:rgba(43,27,61,.72);color:var(--white);border-radius:999px;
+    padding:6px 14px;font-weight:800;font-size:17px;letter-spacing:.3px;
+    box-shadow:0 3px 0 rgba(0,0,0,.25);}
+  #lives{font-size:19px;}
+  #sunscreenBadge{position:absolute;top:54px;left:14px;font-size:15px;display:none;}
+
+  /* ---------- Overlays ---------- */
+  .screen{position:absolute;inset:0;z-index:10;display:flex;flex-direction:column;
+    align-items:center;justify-content:center;text-align:center;padding:28px;
+    background:linear-gradient(180deg,#FF5C8A 0%,#FFA94D 45%,#FFD97A 70%,#17B3A3 100%);}
+  .screen.hidden{display:none;}
+  .postcard{background:var(--white);border-radius:18px;padding:26px 22px;max-width:360px;width:100%;
+    box-shadow:0 10px 0 rgba(43,27,61,.35);border:4px solid var(--dusk);transform:rotate(-1.5deg);}
+  h1{font-size:34px;line-height:1.02;color:var(--dusk);font-weight:900;
+    text-transform:uppercase;letter-spacing:-.5px;}
+  h1 .fl{color:var(--pink);text-shadow:2px 2px 0 var(--teal);}
+  .tag{margin-top:8px;font-size:15px;color:#6b5a52;font-weight:600;}
+  .stamp{position:absolute;top:14px;right:16px;font-size:44px;transform:rotate(12deg);filter:drop-shadow(2px 2px 0 rgba(0,0,0,.2));}
+  .howto{margin-top:14px;font-size:14.5px;color:var(--dusk);text-align:left;line-height:1.55;font-weight:600;}
+  .howto span{font-size:17px;margin-right:6px;}
+  .bigbtn{margin-top:18px;background:var(--teal);color:#fff;border:none;border-radius:14px;
+    font-size:20px;font-weight:900;padding:15px 34px;box-shadow:0 5px 0 #0d7a6e;
+    font-family:inherit;text-transform:uppercase;letter-spacing:.5px;}
+  .bigbtn:active{transform:translateY(4px);box-shadow:0 1px 0 #0d7a6e;}
+  .bigbtn.pink{background:var(--pink);box-shadow:0 5px 0 #b23359;}
+  .bigbtn.pink:active{box-shadow:0 1px 0 #b23359;}
+
+  /* ---------- Minigame layer ---------- */
+  #mini{position:absolute;inset:0;z-index:8;display:none;flex-direction:column;
+    align-items:center;justify-content:center;padding:24px;background:rgba(43,27,61,.88);}
+  #mini.show{display:flex;}
+  #miniCard{background:var(--white);border:4px solid var(--dusk);border-radius:18px;
+    width:100%;max-width:380px;padding:20px 18px;text-align:center;
+    box-shadow:0 10px 0 rgba(0,0,0,.35);}
+  #miniTitle{font-size:23px;font-weight:900;color:var(--dusk);text-transform:uppercase;}
+  #miniSub{font-size:14.5px;color:#6b5a52;font-weight:600;margin-top:4px;min-height:20px;}
+  #miniTimerBar{height:12px;background:#eadfce;border-radius:999px;margin:14px 0 10px;overflow:hidden;border:2px solid var(--dusk);}
+  #miniTimerFill{height:100%;width:100%;background:var(--orange);border-radius:999px;}
+  #miniStage{position:relative;height:290px;border-radius:12px;overflow:hidden;
+    background:linear-gradient(180deg,#BFEFEA,#8FD8CF);border:3px solid var(--dusk);}
+
+  /* gator wrestle */
+  #mashBtn{position:absolute;left:50%;bottom:16px;transform:translateX(-50%);
+    width:120px;height:120px;border-radius:50%;border:5px solid var(--dusk);
+    background:var(--pink);color:#fff;font-size:17px;font-weight:900;font-family:inherit;
+    box-shadow:0 6px 0 #b23359;text-transform:uppercase;}
+  #mashBtn:active{transform:translateX(-50%) translateY(5px);box-shadow:0 1px 0 #b23359;}
+  #gatorFace{position:absolute;top:18px;left:50%;transform:translateX(-50%);font-size:74px;transition:transform .1s;}
+  #wrestleMeter{position:absolute;top:110px;left:10%;right:10%;height:20px;border:3px solid var(--dusk);
+    border-radius:999px;background:#fff;overflow:hidden;}
+  #wrestleFill{height:100%;width:35%;background:var(--green);}
+
+  /* swat + shutters + cart share tappable sprites */
+  .spr{position:absolute;font-size:42px;line-height:1;filter:drop-shadow(2px 3px 0 rgba(0,0,0,.18));}
+  .window{width:64px;height:64px;font-size:40px;display:flex;align-items:center;justify-content:center;
+    background:#CFE8FF;border:3px solid var(--dusk);border-radius:10px;}
+  .window.boarded{background:#B08556;}
+
+  /* toast */
+  #toast{position:absolute;left:50%;top:38%;transform:translateX(-50%);z-index:9;
+    background:var(--dusk);color:#fff;font-weight:900;font-size:20px;padding:12px 22px;
+    border-radius:14px;opacity:0;transition:opacity .25s;pointer-events:none;
+    text-transform:uppercase;letter-spacing:.5px;box-shadow:0 5px 0 rgba(0,0,0,.3);white-space:nowrap;}
+  #toast.show{opacity:1;}
+
+  #gameover .postcard{transform:rotate(1.5deg);}
+  #finalScore{font-size:52px;font-weight:900;color:var(--pink);margin:6px 0 2px;text-shadow:3px 3px 0 var(--teal);}
+  #headline{font-size:16px;font-weight:800;color:var(--dusk);margin-top:10px;line-height:1.4;
+    background:var(--sand);border-radius:10px;padding:10px;border:2px dashed var(--dusk);}
+  #bestLine{margin-top:10px;font-weight:700;color:#6b5a52;font-size:14px;}
+</style>
+</head>
+<body>
+<div id="wrap">
+  <canvas id="cv"></canvas>
+
+  <div id="hud">
+    <div class="pill" id="score">0</div>
+    <div class="pill" id="lives">❤️❤️❤️</div>
+  </div>
+  <div class="pill" id="sunscreenBadge">🧴 protected!</div>
+  <div id="toast"></div>
+
+  <!-- MINI GAME LAYER -->
+  <div id="mini">
+    <div id="miniCard">
+      <div id="miniTitle"></div>
+      <div id="miniSub"></div>
+      <div id="miniTimerBar"><div id="miniTimerFill"></div></div>
+      <div id="miniStage"></div>
+    </div>
+  </div>
+
+  <!-- START -->
+  <div class="screen" id="start">
+    <div class="stamp">🦩</div>
+    <div class="postcard">
+      <h1>Florida Man<br><span class="fl">Survival</span></h1>
+      <div class="tag">greetings from the sunshine state, where everything wants you dead</div>
+      <div class="howto">
+        <div><span>👆</span>Drag anywhere to run left &amp; right</div>
+        <div><span>🥥</span>Dodge coconuts, lawn chairs &amp; gators</div>
+        <div><span>🧴</span>Sunscreen = shield &nbsp;·&nbsp; <b>🧋 iced coffee = FLORIDA RUSH</b></div>
+        <div><span>🌀</span>Survive random mini-game chaos events</div>
+      </div>
+      <button class="bigbtn" id="startBtn">Start survivin'</button>
+    </div>
+  </div>
+
+  <!-- GAME OVER -->
+  <div class="screen hidden" id="gameover">
+    <div class="stamp">🐊</div>
+    <div class="postcard">
+      <h1>You got<br><span class="fl">Florida'd</span></h1>
+      <div id="finalScore">0</div>
+      <div class="tag">survival points</div>
+      <div id="headline"></div>
+      <div id="bestLine"></div>
+      <button class="bigbtn pink" id="againBtn">One more lap</button>
+    </div>
+  </div>
+</div>
+
+<script>
+(() => {
+const cv = document.getElementById('cv'), ctx = cv.getContext('2d');
+const wrap = document.getElementById('wrap');
+let W=0,H=0,DPR=1;
+function resize(){
+  DPR = Math.min(window.devicePixelRatio||1,2);
+  W = wrap.clientWidth; H = wrap.clientHeight;
+  cv.width = W*DPR; cv.height = H*DPR; ctx.setTransform(DPR,0,0,DPR,0,0);
+}
+resize(); addEventListener('resize', resize);
+
+/* ---------------- state ---------------- */
+const S = {
+  running:false, paused:false, score:0, lives:3, best:0,
+  px:0, targetX:0, shield:false, shieldT:0, rush:false, rushT:0,
+  objs:[], t:0, spawnT:0, diff:0, nextMini:0, flip:1, wobble:0, hurt:0
+};
+const scoreEl=document.getElementById('score'), livesEl=document.getElementById('lives');
+const badge=document.getElementById('sunscreenBadge'), toastEl=document.getElementById('toast');
+
+function toast(msg,ms=1100){ toastEl.textContent=msg; toastEl.classList.add('show');
+  clearTimeout(toast._t); toast._t=setTimeout(()=>toastEl.classList.remove('show'),ms); }
+
+function updateHUD(){
+  scoreEl.textContent = Math.floor(S.score);
+  livesEl.textContent = '❤️'.repeat(Math.max(0,S.lives)) || '💀';
+  badge.style.display = S.shield ? 'block' : 'none';
+}
+
+/* ---------------- input: drag to move ---------------- */
+let dragging=false, lastX=0;
+function px(e){ return (e.touches? e.touches[0].clientX : e.clientX); }
+wrap.addEventListener('pointerdown', e=>{ if(!S.running||S.paused)return; dragging=true; lastX=e.clientX; });
+addEventListener('pointermove', e=>{
+  if(!dragging||!S.running||S.paused)return;
+  const dx = e.clientX-lastX; lastX=e.clientX;
+  S.targetX = Math.max(30, Math.min(W-30, S.targetX + dx*1.5));
+});
+addEventListener('pointerup', ()=>dragging=false);
+addEventListener('pointercancel', ()=>dragging=false);
+
+/* ---------------- spawning ---------------- */
+const HAZ = [
+  {e:'🥥', r:18, vy:[220,330], name:'coconut'},
+  {e:'🪑', r:22, vy:[170,260], name:'lawn chair', spin:true},
+  {e:'⚡', r:16, vy:[380,470], name:'lightning'},
+  {e:'🛞', r:20, vy:[200,300], name:'rogue tire', spin:true},
+];
+function spawn(){
+  const roll = Math.random();
+  if(roll < 0.14){ // gator: crawls horizontally near bottom
+    const fromLeft = Math.random()<.5;
+    S.objs.push({type:'gator', e:'🐊', x: fromLeft?-40:W+40, y: H-70,
+      vx:(fromLeft?1:-1)*(120+S.diff*22), r:26, flip:fromLeft?1:-1});
+  } else if(roll < 0.26){ // pickup
+    const coffee = Math.random()<.45;
+    S.objs.push({type:'pick', e: coffee?'🧋':'🧴', kind: coffee?'coffee':'sun',
+      x: 40+Math.random()*(W-80), y:-40, vy: 180+Math.random()*90, r:18});
+  } else {
+    const h = HAZ[Math.floor(Math.random()*HAZ.length)];
+    S.objs.push({type:'haz', e:h.e, x: 30+Math.random()*(W-60), y:-40,
+      vy: h.vy[0]+Math.random()*(h.vy[1]-h.vy[0]) + S.diff*30,
+      r:h.r, spin:h.spin?Math.random()*6:0, a:0, name:h.name});
+  }
+}
+
+/* ---------------- hurricane event (in main game) ---------------- */
+let wind = 0, windT = 0;
+function maybeWind(dt){
+  windT -= dt;
+  if(windT<=0){
+    if(wind===0 && Math.random()<0.15 && S.t>15){
+      wind = (Math.random()<.5?-1:1)*(60+S.diff*25); windT = 5+Math.random()*4;
+      toast('🌀 HURRICANE GUSTS!');
+    } else { wind = 0; windT = 6+Math.random()*8; }
+  }
+}
+
+/* ---------------- collisions & loop ---------------- */
+function hit(){
+  if(S.shield){ S.shield=false; toast('🧴 sunscreen saved you!'); updateHUD(); return; }
+  S.lives--; S.hurt = .5; updateHUD();
+  if(navigator.vibrate) navigator.vibrate(80);
+  if(S.lives<=0) gameOver(); else toast('OUCH 😵');
+}
+
+let last=0;
+function loop(ts){
+  if(!S.running) return;
+  requestAnimationFrame(loop);
+  if(S.paused){ last=ts; return; }
+  const dt = Math.min(.033,(ts-last)/1000||0); last=ts;
+
+  S.t += dt; S.diff = Math.min(6, S.t/25);
+  S.score += dt * (S.rush?22:10);
+  if(S.rush){ S.rushT-=dt; if(S.rushT<=0){S.rush=false; toast('rush over 😮‍💨');} }
+  if(S.hurt>0) S.hurt-=dt;
+  maybeWind(dt);
+
+  // spawn cadence
+  S.spawnT -= dt;
+  if(S.spawnT<=0){ spawn(); S.spawnT = Math.max(.28, .95 - S.diff*.11); }
+
+  // mini-game trigger
+  if(S.t > S.nextMini){ startMini(); return; }
+
+  // player
+  const sp = S.rush? 14:9;
+  S.px += (S.targetX - S.px)*Math.min(1,dt*sp);
+  S.wobble += dt*10;
+
+  // objects
+  const py = H-64;
+  for(let i=S.objs.length-1;i>=0;i--){
+    const o=S.objs[i];
+    if(o.type==='gator'){ o.x += o.vx*dt; if(o.x<-60||o.x>W+60){S.objs.splice(i,1);continue;} }
+    else { o.y += o.vy*dt; o.x += wind*dt; if(o.spin)o.a+=o.spin*dt;
+      if(o.y>H+50){S.objs.splice(i,1);continue;} }
+    const dx=o.x-S.px, dy=o.y-py, rr=o.r+20;
+    if(dx*dx+dy*dy < rr*rr){
+      S.objs.splice(i,1);
+      if(o.type==='pick'){
+        if(o.kind==='sun'){ S.shield=true; S.score+=25; toast('🧴 SPF ∞ ACTIVATED'); }
+        else { S.rush=true; S.rushT=6; S.score+=25; toast('🧋 FLORIDA RUSH x2!'); }
+        updateHUD();
+      } else hit();
+    }
+  }
+  draw(py);
+  updateHUD();
+}
+
+/* ---------------- drawing ---------------- */
+function draw(py){
+  // sky
+  const g=ctx.createLinearGradient(0,0,0,H);
+  if(S.rush){ g.addColorStop(0,'#FF5C8A');g.addColorStop(.6,'#FFA94D');g.addColorStop(1,'#FFD97A'); }
+  else { g.addColorStop(0,'#4FC3F7');g.addColorStop(.55,'#8FE0D8');g.addColorStop(1,'#FFE9B3'); }
+  ctx.fillStyle=g; ctx.fillRect(0,0,W,H);
+  // sun
+  ctx.font='54px serif'; ctx.fillText('🌞', W-72, 70);
+  // wind streaks
+  if(wind!==0){ ctx.strokeStyle='rgba(255,255,255,.5)'; ctx.lineWidth=3;
+    for(let i=0;i<6;i++){ const y=60+i*(H-160)/6, off=(S.t*220)%(W+120)-60;
+      const x = wind>0? off : W-off;
+      ctx.beginPath(); ctx.moveTo(x,y); ctx.lineTo(x+ (wind>0?46:-46), y); ctx.stroke(); } }
+  // ground
+  ctx.fillStyle='#F2D48F'; ctx.fillRect(0,H-40,W,40);
+  ctx.fillStyle='#17B3A3'; ctx.fillRect(0,H-46,W,8);
+  // palm trees
+  ctx.font='44px serif'; ctx.fillText('🌴',18,H-38); ctx.fillText('🌴',W-58,H-38);
+
+  // objects
+  for(const o of S.objs){
+    ctx.save(); ctx.translate(o.x,o.y);
+    if(o.a) ctx.rotate(o.a);
+    if(o.flip===-1) ctx.scale(-1,1);
+    ctx.font=(o.type==='gator'?'46px':'38px')+' serif';
+    ctx.textAlign='center'; ctx.textBaseline='middle';
+    ctx.fillText(o.e,0,0); ctx.restore();
+  }
+
+  // florida man
+  ctx.save(); ctx.translate(S.px,py);
+  ctx.rotate(Math.sin(S.wobble)*.08);
+  if(S.hurt>0 && Math.floor(S.hurt*12)%2===0) ctx.globalAlpha=.35;
+  ctx.font='46px serif'; ctx.textAlign='center'; ctx.textBaseline='middle';
+  ctx.fillText(S.rush?'🏃‍♂️':'🧔', 0, 0);
+  if(S.shield){ ctx.strokeStyle='rgba(255,255,255,.9)'; ctx.lineWidth=4;
+    ctx.beginPath(); ctx.arc(0,0,32,0,7); ctx.stroke(); }
+  ctx.restore();
+}
+
+/* ================= MINI GAMES ================= */
+const mini = document.getElementById('mini'), stage=document.getElementById('miniStage');
+const mTitle=document.getElementById('miniTitle'), mSub=document.getElementById('miniSub'),
+      mFill=document.getElementById('miniTimerFill');
+let miniActive=false;
+
+function startMini(){
+  S.paused=true; miniActive=true; S.objs.length=0;
+  S.nextMini = S.t + 26 + Math.random()*14;
+  const games=[gatorWrestle,mosquitoSwat,shutterScramble,publixSprint];
+  games[Math.floor(Math.random()*games.length)]();
+  mini.classList.add('show');
+}
+function endMini(win,msg,bonus){
+  miniActive=false; mini.classList.remove('show'); stage.innerHTML='';
+  if(win){ S.score+=bonus; toast(msg+' +'+bonus); }
+  else { toast(msg); hit(); }
+  if(S.running){ S.paused=false; }
+}
+function runTimer(seconds,onFail){
+  let t=seconds; const id=setInterval(()=>{
+    if(!miniActive){clearInterval(id);return;}
+    t-=.05; mFill.style.width=Math.max(0,t/seconds*100)+'%';
+    if(t<=0){ clearInterval(id); onFail(); }
+  },50);
+  return ()=>clearInterval(id);
+}
+
+/* 1 — GATOR WRESTLE: mash to fill meter */
+function gatorWrestle(){
+  mTitle.textContent='🐊 Gator Wrestle!';
+  mSub.textContent='A gator grabbed your leg — MASH to break free!';
+  stage.innerHTML=`<div id="gatorFace">🐊</div>
+    <div id="wrestleMeter"><div id="wrestleFill"></div></div>
+    <button id="mashBtn">MASH!</button>`;
+  let p=35; const fill=stage.querySelector('#wrestleFill'), face=stage.querySelector('#gatorFace');
+  const stop=runTimer(6,()=>endMini(false,'the gator got a nibble 🩹'));
+  const drain=setInterval(()=>{ if(!miniActive){clearInterval(drain);return;}
+    p=Math.max(0,p-1.6); fill.style.width=p+'%'; },80);
+  stage.querySelector('#mashBtn').addEventListener('pointerdown',e=>{
+    e.preventDefault(); p+=6; fill.style.width=Math.min(100,p)+'%';
+    face.style.transform='translateX(-50%) rotate('+(Math.random()*30-15)+'deg)';
+    if(navigator.vibrate)navigator.vibrate(10);
+    if(p>=100){ stop(); clearInterval(drain); endMini(true,'ESCAPED THE GATOR 💪',150); }
+  });
+}
+
+/* 2 — MOSQUITO SWAT: tap 8 skeeters */
+function mosquitoSwat(){
+  mTitle.textContent='🦟 Skeeter Swarm!';
+  mSub.textContent='Swat 8 mosquitoes before they carry you away!';
+  let left=8;
+  const stop=runTimer(7,()=>endMini(false,'drained by skeeters 🩸'));
+  function addBug(){
+    const b=document.createElement('div'); b.className='spr'; b.textContent='🦟';
+    b.style.left=(10+Math.random()*75)+'%'; b.style.top=(5+Math.random()*80)+'%';
+    let vx=(Math.random()*2-1)*1.4, vy=(Math.random()*2-1)*1.4;
+    const mv=setInterval(()=>{ if(!miniActive){clearInterval(mv);return;}
+      let L=parseFloat(b.style.left)+vx, T=parseFloat(b.style.top)+vy;
+      if(L<2||L>85)vx*=-1; if(T<2||T>82)vy*=-1;
+      b.style.left=L+'%'; b.style.top=T+'%'; },50);
+    b.addEventListener('pointerdown',()=>{ clearInterval(mv); b.textContent='💥';
+      setTimeout(()=>b.remove(),120); left--;
+      mSub.textContent=left>0? left+' left — keep swattin\'!':'';
+      if(left<=0){ stop(); endMini(true,'SWARM CLEARED 🙌',120); } });
+    stage.appendChild(b);
+  }
+  for(let i=0;i<8;i++) addBug();
+}
+
+/* 3 — SHUTTER SCRAMBLE: tap all windows before the storm */
+function shutterScramble(){
+  mTitle.textContent='🌀 Cat-5 Incoming!';
+  mSub.textContent='Board up every window before the hurricane hits!';
+  const n=6; let done=0;
+  const stop=runTimer(6,()=>endMini(false,'your lanai is in Georgia now 🏚️'));
+  for(let i=0;i<n;i++){
+    const w=document.createElement('div'); w.className='spr window'; w.textContent='🪟';
+    w.style.left=(8+ (i%3)*32)+'%'; w.style.top=(12+Math.floor(i/3)*45)+'%';
+    w.addEventListener('pointerdown',()=>{ if(w.classList.contains('boarded'))return;
+      w.classList.add('boarded'); w.textContent='🪵'; done++;
+      if(navigator.vibrate)navigator.vibrate(10);
+      if(done>=n){ stop(); endMini(true,'HOUSE SECURED 🏠',130); } });
+    stage.appendChild(w);
+  }
+  const storm=document.createElement('div'); storm.className='spr'; storm.textContent='🌀';
+  storm.style.right='-50px'; storm.style.top='40%'; storm.style.fontSize='64px';
+  storm.style.transition='right 6s linear'; stage.appendChild(storm);
+  requestAnimationFrame(()=>storm.style.right='90%');
+}
+
+/* 4 — PUBLIX SPRINT: grab subs, avoid carts */
+function publixSprint(){
+  mTitle.textContent='🥪 Pub Sub Rush!';
+  mSub.textContent='Grab 5 chicken tender subs — do NOT tap the carts!';
+  let got=0;
+  const stop=runTimer(8,()=>endMini(false,'BOGO deal expired 😭'));
+  function drop(){
+    if(!miniActive) return;
+    const isSub=Math.random()<.55;
+    const d=document.createElement('div'); d.className='spr';
+    d.textContent=isSub?'🥪':'🛒';
+    d.style.left=(8+Math.random()*78)+'%'; d.style.top='-50px';
+    d.style.transition='top '+(1.6+Math.random())+'s linear';
+    d.addEventListener('pointerdown',()=>{ d.remove();
+      if(isSub){ got++; mSub.textContent=got+'/5 subs — where\'s the sale?!';
+        if(navigator.vibrate)navigator.vibrate(10);
+        if(got>=5){ stop(); endMini(true,'SUBS SECURED 🥪👑',140); } }
+      else { stop(); endMini(false,'cart to the shins 🛒💥'); } });
+    stage.appendChild(d);
+    requestAnimationFrame(()=>d.style.top='105%');
+    setTimeout(()=>d.remove(),3000);
+    if(miniActive) setTimeout(drop, 420+Math.random()*280);
+  }
+  drop();
+}
+
+/* ---------------- game over / start ---------------- */
+const HEADLINES=[
+  '“Local man defeated by patio furniture, witnesses unsurprised.”',
+  '“Florida man loses argument with coconut; coconut unavailable for comment.”',
+  '“Man attempts to high-five alligator. Alligator declines.”',
+  '“Hurricane relocates man\'s flip-flops to another county.”',
+  '“Area man ran out of iced coffee, immediately gave up.”',
+  '“Florida man survives everything except Tuesday.”',
+];
+function gameOver(){
+  S.running=false; miniActive=false; mini.classList.remove('show'); stage.innerHTML='';
+  const sc=Math.floor(S.score); S.best=Math.max(S.best,sc);
+  document.getElementById('finalScore').textContent=sc;
+  document.getElementById('headline').textContent=HEADLINES[Math.floor(Math.random()*HEADLINES.length)];
+  document.getElementById('bestLine').textContent='Best run: '+S.best;
+  document.getElementById('gameover').classList.remove('hidden');
+}
+function startGame(){
+  document.getElementById('start').classList.add('hidden');
+  document.getElementById('gameover').classList.add('hidden');
+  Object.assign(S,{running:true,paused:false,score:0,lives:3,shield:false,rush:false,
+    objs:[],t:0,spawnT:.5,diff:0,hurt:0,nextMini:14+Math.random()*8});
+  S.px=S.targetX=W/2; wind=0; windT=6;
+  updateHUD(); last=performance.now(); requestAnimationFrame(loop);
+}
+document.getElementById('startBtn').addEventListener('click',startGame);
+document.getElementById('againBtn').addEventListener('click',startGame);
+})();
+</script>
+</body>
+</html>
