@@ -1,0 +1,259 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+  <meta name="theme-color" content="#061821">
+  <title>Florida Man Survival</title>
+  <style>
+    :root{--navy:#061821;--aqua:#45f3d0;--yellow:#ffd447;--orange:#ff6b1a;--pink:#ff3f81;--lime:#b8ff3d}
+    *{box-sizing:border-box}
+    html,body{margin:0;min-height:100%;background:#041017;color:#fff;font-family:Impact,Haettenschweiler,"Arial Narrow Bold",system-ui,sans-serif;overscroll-behavior:none}
+    button{font:inherit;-webkit-tap-highlight-color:transparent;touch-action:manipulation;cursor:pointer}
+    .shell{min-height:100dvh;display:grid;place-items:center;padding:16px;background:radial-gradient(circle at 20% 20%,#164958 0,transparent 35%),radial-gradient(circle at 80% 80%,#4a1e3e 0,transparent 35%),#041017}
+    .game{position:relative;isolation:isolate;overflow:hidden;width:min(430px,calc(100vw - 24px));height:min(880px,calc(100dvh - 32px));min-height:620px;border:4px solid #173945;border-radius:32px;box-shadow:0 28px 80px #000a;background:linear-gradient(180deg,#ff8a24 0%,#733d66 31%,#0b4c5a 58%,#04131b 100%)}
+    .game:before{content:"";position:absolute;inset:0;z-index:-2;background:radial-gradient(circle at 74% 19%,#ffd447 0 5%,#ff7d2430 6% 19%,transparent 20%),linear-gradient(135deg,transparent 0 47%,#ffffff09 48%,transparent 49%)}
+    .game:after{content:"";position:absolute;inset:0;z-index:-1;pointer-events:none;background:linear-gradient(180deg,transparent 25%,#071b2555 59%,#02090dde 100%)}
+    .hidden{display:none!important}
+    .tape{width:calc(100% + 40px);margin:18px -20px 12px;padding:8px;color:var(--navy);background:repeating-linear-gradient(135deg,var(--yellow) 0 15px,#ffac1f 15px 30px);border-block:3px solid var(--navy);font:900 .8rem Arial;letter-spacing:.08em;transform:rotate(-2deg)}
+    .start-screen{position:absolute;inset:0;z-index:20;display:flex;flex-direction:column;align-items:center;padding:0 22px 22px;text-align:center;background:linear-gradient(180deg,#06182122,#061821e8 79%)}
+    .gator{font-size:5.4rem;line-height:1;filter:drop-shadow(0 8px 0 #061821);animation:bob 2s ease-in-out infinite}
+    .eyebrow{margin:6px 0;color:var(--aqua);font:900 .7rem Arial;letter-spacing:.16em}
+    h1{margin:3px 0 12px;color:#fff5d5;font-size:clamp(3.5rem,15vw,5.7rem);line-height:.77;letter-spacing:-.04em;text-shadow:0 5px 0 #061821,0 9px 0 var(--pink),0 14px 25px #000b;transform:skewY(-2deg)}
+    h1 span{color:var(--yellow);font-size:.84em}
+    .intro{max-width:340px;margin:10px auto 18px;font:800 1rem/1.35 Arial;text-shadow:0 2px 5px #000}
+    .big-button{width:100%;border:0;border-radius:13px;padding:17px 18px;color:var(--navy);background:linear-gradient(180deg,var(--yellow),#ff9f1c);box-shadow:0 7px 0 #9b390b,0 11px 24px #0008;font-size:1.1rem;letter-spacing:.04em}
+    .big-button:active{transform:translateY(5px);box-shadow:0 2px 0 #9b390b}
+    .tips{width:100%;display:grid;grid-template-columns:repeat(3,1fr);gap:7px;margin-top:20px}
+    .tips span{display:grid;place-items:center;min-height:55px;padding:7px 3px;border:1px solid #ffffff40;border-radius:9px;background:#071b25cf;font:800 .62rem/1.2 Arial}
+    .best{margin-top:auto;padding:7px 14px;border-radius:999px;color:var(--yellow);background:#071b25e5;font:800 .78rem Arial}
+    .hud{position:absolute;z-index:10;inset:0 0 auto;padding:12px 12px 14px;background:linear-gradient(180deg,#031016f5,#031016d5 75%,transparent)}
+    .hud-top{display:grid;grid-template-columns:1fr auto 1.25fr auto;gap:7px;align-items:center}
+    .score{display:grid}.score small{color:var(--aqua);font:700 .58rem Arial;letter-spacing:.13em}.score strong{font-size:1.3rem}
+    .level-chip{padding:6px 8px;border:2px solid #fff;border-radius:7px;color:var(--navy);background:var(--yellow);font-size:.84rem;transform:rotate(-3deg)}
+    .lives{text-align:right;font:1rem Arial;white-space:nowrap}
+    .sound{width:34px;height:34px;border:1px solid #ffffff40;border-radius:9px;background:#ffffff12;color:white}
+    .level-row{display:flex;align-items:end;justify-content:space-between;gap:10px;margin-top:7px}
+    .level-row span{color:#c7dde3;font:700 .65rem Arial}.level-row strong{font-size:.93rem;text-align:right}
+    .timer{height:5px;margin-top:6px;overflow:hidden;border-radius:4px;background:#ffffff22}.timer i{display:block;height:100%;background:linear-gradient(90deg,var(--aqua),var(--yellow),var(--pink));transition:width .3s}
+    .ticker{position:absolute;z-index:9;top:96px;left:0;right:0;height:31px;display:grid;grid-template-columns:auto 1fr;align-items:center;color:var(--navy);background:#fff4d5ef;box-shadow:0 4px 10px #0005}
+    .ticker b{align-self:stretch;display:grid;place-items:center;padding:0 8px;color:#fff;background:var(--pink);font-size:.66rem}.ticker span{overflow:hidden;padding:0 8px;font:800 .68rem Arial;white-space:nowrap;text-overflow:ellipsis}
+    .boss{position:absolute;z-index:12;top:92px;left:10px;right:10px;display:grid;grid-template-columns:42px 1fr;gap:7px;align-items:center;padding:7px;border:2px solid var(--pink);border-radius:11px;background:#26101fea}
+    .boss .face{font-size:2rem}.boss label{color:#ffc0d6;font:900 .64rem Arial}.bossbar{height:7px;margin-top:5px;overflow:hidden;border-radius:5px;background:#ffffff20}.bossbar i{display:block;height:100%;background:linear-gradient(90deg,#ff254e,#ff70a3);transition:width .2s}
+    .boss-on .ticker{top:145px}.boss-on .field{top:176px}
+    .field{position:absolute;z-index:3;inset:127px 0 139px;overflow:hidden;background:linear-gradient(90deg,#06182188,#ffffff08 33%,#06182188 34%,#ffffff08 66%,#06182188 67%)}
+    .lane{position:absolute;top:0;bottom:0;border-left:2px dashed #ffffff32}.lane.one{left:33.333%}.lane.two{left:66.666%}
+    .object{position:absolute;z-index:4;width:31%;display:grid;place-items:center;filter:drop-shadow(0 4px 2px #000a);will-change:top,transform}
+    .object .icon{font:2.8rem/1 "Apple Color Emoji","Segoe UI Emoji",sans-serif;animation:bop .5s ease-in-out infinite alternate}
+    .object small{max-width:98px;margin-top:2px;padding:3px 5px;overflow:hidden;border-radius:4px;color:#fff;background:#061821e8;font:800 .53rem Arial;white-space:nowrap;text-overflow:ellipsis}
+    .object.power .icon{padding:5px;border:2px solid var(--aqua);border-radius:50%;background:#063844d9;box-shadow:0 0 0 4px #45f3d025,0 0 22px var(--aqua)}
+    .player{position:absolute;z-index:8;bottom:4%;width:70px;height:108px;display:flex;align-items:center;flex-direction:column;transform:translateX(-50%);filter:drop-shadow(0 7px 5px #000b);transition:left .12s cubic-bezier(.2,.9,.4,1.2)}
+    .cap{height:25px;font-size:2rem;line-height:1;z-index:3}.head{font-size:2.8rem;line-height:1;z-index:2}
+    .shirt{width:47px;height:34px;display:grid;place-items:center;margin-top:-3px;border:3px solid #061821;border-radius:10px 10px 5px 5px;color:var(--navy);background:linear-gradient(135deg,var(--orange),var(--yellow));font-size:1.1rem}
+    .feet{font:1.3rem/1 "Apple Color Emoji","Segoe UI Emoji",sans-serif}
+    .bubble{position:absolute;inset:-9px -10px -5px;border:3px solid var(--aqua);border-radius:50%;background:#45f3d012;box-shadow:inset 0 0 20px #45f3d055,0 0 20px #45f3d099;animation:pulse .7s infinite alternate}
+    .combo{position:absolute;top:8px;left:50%;z-index:9;padding:6px 10px;border:2px solid #fff;border-radius:6px;color:var(--navy);background:var(--lime);font-size:.86rem;transform:translateX(-50%) rotate(-2deg);box-shadow:0 4px 0 #286c22;white-space:nowrap}
+    .powers{position:absolute;z-index:11;left:10px;right:10px;bottom:87px;display:grid;grid-template-columns:1fr 1fr auto;gap:5px}
+    .powers span{padding:6px;border:1px solid #ffffff32;border-radius:7px;color:#c8dde2;background:#04131bea;font:800 .64rem Arial}.powers .active{color:var(--aqua);border-color:var(--aqua)}
+    .attack{position:absolute;z-index:13;left:10px;right:10px;bottom:121px;padding:9px;border:2px solid #fff;border-radius:9px;color:var(--navy);background:var(--lime);box-shadow:0 5px 0 #397d17;font-size:.83rem}.attack:disabled{color:#91a0a4;border-color:#64747a;background:#172c34;box-shadow:none}
+    .controls{position:absolute;z-index:11;left:10px;right:10px;bottom:11px;display:grid;grid-template-columns:1fr 70px 1fr;gap:8px}
+    .controls button{min-height:66px;display:grid;place-items:center;border:2px solid #ffffffcc;border-radius:13px;color:#fff;background:linear-gradient(180deg,#164655ed,#09252fed);box-shadow:0 5px 0 #020b0f}.controls button:active{transform:translateY(4px);box-shadow:0 1px 0 #020b0f}.controls b{font-size:1.45rem}.controls small{font:900 .57rem Arial;letter-spacing:.1em}.controls .pause{background:#152830}
+    .overlay{position:absolute;inset:0;z-index:40;display:grid;place-items:center;padding:20px;background:#02090dde;backdrop-filter:blur(6px)}
+    .card{width:100%;padding:24px 18px;border:3px solid var(--yellow);border-radius:18px;background:radial-gradient(circle at 50% 0,#195568,transparent 50%),var(--navy);box-shadow:0 14px 0 #02090d,0 25px 70px #000;text-align:center}
+    .card h2{margin:12px 0 8px;color:#fff4d5;font-size:clamp(2rem,10vw,3rem);line-height:.93;text-shadow:0 4px 0 var(--pink)}.card p{margin:10px auto 14px;color:#d7e7eb;font:700 .92rem/1.35 Arial}
+    .kicker{display:inline-block;padding:6px 10px;border-radius:5px;color:var(--navy);background:var(--yellow);font:900 .7rem Arial;letter-spacing:.1em}
+    .mini-progress{height:8px;overflow:hidden;border-radius:5px;background:#ffffff1d}.mini-progress i{display:block;height:100%;background:linear-gradient(90deg,var(--aqua),var(--lime))}
+    .mini-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin:16px 0 12px}.mini-grid button{aspect-ratio:1.2;border:2px solid #ffffff65;border-radius:11px;background:#ffffff12;box-shadow:0 4px 0 #020a0e;font:2.2rem "Apple Color Emoji","Segoe UI Emoji",sans-serif}.mini-grid button:active{transform:translateY(3px) scale(.95)}
+    .result-icon{font-size:4.3rem}.final-score{display:grid;place-items:center;margin:17px 0;padding:12px;border:1px solid #ffffff30;border-radius:10px;background:#02090d77}.final-score small{color:var(--aqua);font:800 .62rem Arial}.final-score strong{color:var(--yellow);font-size:2.5rem}.link-btn{margin-top:18px;border:0;color:#c0d0d5;background:transparent;font:800 .78rem Arial;text-decoration:underline}
+    .shake{animation:shake .25s linear}
+    @keyframes bob{50%{transform:translateY(-8px) rotate(3deg)}}@keyframes bop{to{transform:translateY(4px) scale(1.04)}}@keyframes pulse{to{transform:scale(1.05)}}@keyframes shake{25%{transform:translateX(-9px)}75%{transform:translateX(9px)}}
+    @media(max-width:560px){.shell{display:block;padding:0}.game{width:100vw;height:100dvh;min-height:580px;border:0;border-radius:0}.controls{bottom:max(9px,env(safe-area-inset-bottom))}}
+    @media(max-height:700px){.tape{margin-block:11px 7px}.gator{font-size:3.5rem}h1{font-size:3.7rem}.intro{margin-block:7px 12px;font-size:.86rem}.tips{margin-top:13px}.tips span{min-height:42px;font-size:.54rem}.controls button{min-height:58px}.powers{bottom:77px}.field{bottom:128px}}
+    @media(prefers-reduced-motion:reduce){*{animation-duration:.001ms!important;animation-iteration-count:1!important}}
+  </style>
+</head>
+<body>
+  <main class="shell">
+    <section class="game" id="game">
+      <div class="start-screen" id="startScreen">
+        <div class="tape">⚠ FLORIDA RESIDENT ADVISORY ⚠</div>
+        <div class="gator">🐊</div>
+        <p class="eyebrow">SUNSHINE STATE ARCADE PRESENTS</p>
+        <h1>FLORIDA MAN<br><span>SURVIVAL</span></h1>
+        <p class="intro">Dodge chaos. Collect caffeine. Defeat the HOA. Try to keep both flip-flops.</p>
+        <button class="big-button" id="startBtn">START THE NONSENSE ▶</button>
+        <div class="tips"><span>👈 SWIPE OR TAP</span><span>🧴 GRAB POWER-UPS</span><span>🐊 SURVIVE 5 LEVELS</span></div>
+        <div class="best" id="best">🏆 LOCAL LEGEND: 0</div>
+      </div>
+
+      <div id="gameUi" class="hidden">
+        <header class="hud">
+          <div class="hud-top">
+            <div class="score"><small>SCORE</small><strong id="score">0</strong></div>
+            <div class="level-chip" id="levelChip">LVL 1</div>
+            <div class="lives" id="lives">❤️❤️❤️</div>
+            <button class="sound" id="soundBtn" aria-label="Mute sound">🔊</button>
+          </div>
+          <div class="level-row"><span id="place">Fort Lauderdale</span><strong id="levelName">I-95 Initiation</strong></div>
+          <div class="timer"><i id="timerBar"></i></div>
+        </header>
+        <div class="boss hidden" id="boss">
+          <div class="face">👩‍💼</div>
+          <div><label>HOA KAREN · COMPLIANCE TITAN</label><div class="bossbar"><i id="bossBar"></i></div></div>
+        </div>
+        <div class="ticker"><b>BREAKING</b><span id="headline">A calm Florida day. Suspicious.</span></div>
+        <div class="field" id="field">
+          <div class="lane one"></div><div class="lane two"></div>
+          <div class="player" id="player">
+            <div class="bubble hidden" id="bubble"></div>
+            <div class="cap">🧢</div><div class="head">😎</div><div class="shirt">FL</div><div class="feet">🩴 🩴</div>
+          </div>
+          <div class="combo hidden" id="combo"></div>
+        </div>
+        <div class="powers"><span id="shieldStat">🧴 SPF —</span><span id="slowStat">☕ SLOW —</span><span id="clock">⏱ 24s</span></div>
+        <button class="attack hidden" id="attack">CHARGING GATOR 0%</button>
+        <nav class="controls">
+          <button id="left"><b>◀</b><small>LEFT</small></button>
+          <button class="pause" id="pause"><b>Ⅱ</b><small>PAUSE</small></button>
+          <button id="right"><b>▶</b><small>RIGHT</small></button>
+        </nav>
+      </div>
+      <div class="overlay hidden" id="overlay"></div>
+    </section>
+  </main>
+
+  <script>
+    (function(){
+      "use strict";
+      var levels=[
+        {name:"I-95 Initiation",place:"Fort Lauderdale",duration:24,speed:1.1,h:[["🚧","Cone with tenure"],["🛴","Abandoned scooter"],["🦎","Falling iguana"],["🚗","Turn-signal refuser"]]},
+        {name:"Everglades Express",place:"West of civilization",duration:26,speed:1.35,h:[["🐊","Emotional-support gator"],["🦟","Mosquito with a mortgage"],["🐍","Unlicensed pool noodle"],["🛶","Airboat Uber"]]},
+        {name:"Publix Parking Lot",place:"The final parking space",duration:28,speed:1.6,h:[["🛒","Free-range shopping cart"],["🥥","Suspicious coconut"],["🚙","Backing-up Buick"],["🧓","Coupon warrior"]]},
+        {name:"Category: Absolutely Not",place:"South Florida",duration:30,speed:1.9,h:[["🪑","Neighbor's lawn chair"],["🌴","Freelance palm tree"],["🌀","Poor life choice"],["🦩","Ballistic flamingo"]]},
+        {name:"Final Boss: HOA Karen",place:"A beige gated community",duration:35,speed:2.15,h:[["📋","Violation notice"],["📸","Doorbell-camera evidence"],["✉️","Strongly worded letter"],["🚫","Unauthorized fun"]]}
+      ];
+      var events=["A sinkhole opened two lanes over. Honestly, helpful.","Someone put hazard lights on. They are now legally invincible.","The humidity is 143%. Your hair has filed for independence.","A Publix sub appears in the distance. Hope has returned.","Breaking: local iguana refuses to comment.","A lifted truck blocks out the sun.","Your flip-flop entered Sport Mode.","The forecast says: yes."];
+      var powerups=[["🧴","SPF 9000","shield"],["☕","Iced coffee","coffee"],["🩴","Emergency flip-flop","heal"]];
+      var miniGames=[
+        {title:"PUBLIX SUB PANIC",copy:"Grab four subs. Do not waste precious seconds on salad.",target:"🥪",need:4,items:["🥪","🥪","🥪","🥪","🥬","🥦","🧻","🛒","🍍"]},
+        {title:"SKEETER SMACKDOWN",copy:"Smack six mosquitoes before they carry away your car.",target:"🦟",need:6,items:["🦟","🦟","🦟","🦟","🦟","🦟","🪰","🦋","🐝"]},
+        {title:"HURRICANE PREP SPEEDRUN",copy:"Collect four actual supplies. Leave the pool float.",target:"supply",need:4,items:["💧","🔦","🔋","🥫","🦩","🏄","🎺","🎰","🛼"]},
+        {title:"GATOR NEGOTIATIONS",copy:"Boop three gators. This is not legal advice.",target:"🐊",need:3,items:["🐊","🐊","🐊","🪵","🌭","🐢","🌿","🛟","🐸"]}
+      ];
+      var supplies=["💧","🔦","🔋","🥫"];
+      var state={mode:"title",level:1,time:24,lane:1,health:3,score:0,combo:0,shield:0,slow:0,boss:100,charge:0,muted:false,objects:[]};
+      var intervals=[],nextId=1,touchX=null;
+      var $=function(id){return document.getElementById(id)};
+      var game=$("game"),field=$("field"),overlay=$("overlay");
+      $("best").textContent="🏆 LOCAL LEGEND: "+Number(localStorage.getItem("florida-high")||0).toLocaleString();
+
+      function tone(freq,duration){
+        if(state.muted)return;
+        try{var C=window.AudioContext||window.webkitAudioContext;if(!C)return;window._flAudio=window._flAudio||new C();var c=window._flAudio,o=c.createOscillator(),g=c.createGain();o.type="square";o.frequency.value=freq;g.gain.setValueAtTime(.04,c.currentTime);g.gain.exponentialRampToValueAtTime(.001,c.currentTime+duration);o.connect(g).connect(c.destination);o.start();o.stop(c.currentTime+duration)}catch(e){}
+      }
+      function clearTimers(){intervals.forEach(clearInterval);intervals=[]}
+      function shuffle(a){return a.slice().sort(function(){return Math.random()-.5})}
+      function headline(text){$("headline").textContent=text}
+      function move(dir){if(state.mode!=="playing")return;state.lane=Math.max(0,Math.min(2,state.lane+dir));drawPlayer();tone(270+state.lane*55,.035)}
+      function drawPlayer(){$("player").style.left=(state.lane*33.333+16.666)+"%"}
+      function update(){
+        $("score").textContent=Math.floor(state.score).toLocaleString();
+        $("levelChip").textContent="LVL "+state.level;
+        $("lives").textContent="❤️".repeat(state.health)+"🖤".repeat(3-state.health);
+        $("levelName").textContent=levels[state.level-1].name;
+        $("place").textContent=levels[state.level-1].place;
+        $("clock").textContent="⏱ "+state.time+"s";
+        $("timerBar").style.width=(100-state.time/levels[state.level-1].duration*100)+"%";
+        $("shieldStat").textContent="🧴 SPF "+(state.shield||"—");
+        $("slowStat").textContent="☕ SLOW "+(state.slow||"—");
+        $("shieldStat").classList.toggle("active",state.shield>0);
+        $("slowStat").classList.toggle("active",state.slow>0);
+        $("bubble").classList.toggle("hidden",state.shield<=0);
+        $("combo").classList.toggle("hidden",state.combo<5);
+        $("combo").textContent=state.combo+"× CHAOS COMBO!";
+        $("bossBar").style.width=state.boss+"%";
+        $("attack").textContent=state.charge>=100?"🐊 LAUNCH GATOR":"CHARGING GATOR "+state.charge+"%";
+        $("attack").disabled=state.charge<100;
+      }
+      function addObject(data,kind){
+        var obj={id:nextId++,lane:Math.floor(Math.random()*3),y:-12,icon:data[0],label:data[1],kind:kind||"hazard",wobble:Math.random()*2-1};
+        var el=document.createElement("div");el.className="object"+(obj.kind!=="hazard"?" power":"");el.dataset.id=obj.id;el.innerHTML='<span class="icon">'+obj.icon+'</span><small>'+obj.label+'</small>';field.appendChild(el);obj.el=el;state.objects.push(obj)
+      }
+      function removeObject(obj){if(obj.el&&obj.el.parentNode)obj.el.remove()}
+      function hitPower(obj){
+        if(obj.kind==="shield"){state.shield=7;state.score+=125;headline("SPF 9000 activated. The sun fears you.");tone(760,.12)}
+        if(obj.kind==="coffee"){state.slow=7;state.score+=150;headline("Iced coffee acquired. Time is temporarily polite.");tone(680,.12)}
+        if(obj.kind==="heal"){state.health=Math.min(3,state.health+1);state.score+=100;headline("Emergency flip-flop restored one life.");tone(600,.12)}
+        if(navigator.vibrate)navigator.vibrate(25)
+      }
+      function tick(){
+        var speed=levels[state.level-1].speed*(state.slow>0?.54:1),kept=[];
+        state.objects.forEach(function(obj){
+          obj.y+=speed;
+          var collided=obj.lane===state.lane&&obj.y>77&&obj.y<94;
+          if(collided){
+            if(obj.kind==="hazard"){
+              if(state.shield>0){state.combo++;state.score+=25;headline(obj.label+" bounced off the SPF force field.")}
+              else{state.health--;state.combo=0;headline("WHACK! "+obj.label+". Florida wins this round.");tone(105,.18);if(navigator.vibrate)navigator.vibrate([45,30,45])}
+            }else hitPower(obj);
+            removeObject(obj)
+          }else if(obj.y>105){if(obj.kind==="hazard"){state.combo++;state.score+=10}removeObject(obj)}
+          else{obj.el.style.left=(obj.lane*33.333+16.666)+"%";obj.el.style.top=obj.y+"%";obj.el.style.transform="translate(-50%,-50%) rotate("+(obj.wobble*obj.y)+"deg)";kept.push(obj)}
+        });
+        state.objects=kept;update();
+        if(state.health<=0)end(false)
+      }
+      function startLevel(){
+        clearTimers();state.mode="playing";state.objects.forEach(removeObject);state.objects=[];state.time=levels[state.level-1].duration;
+        game.classList.toggle("boss-on",state.level===5);$("boss").classList.toggle("hidden",state.level!==5);$("attack").classList.toggle("hidden",state.level!==5);overlay.classList.add("hidden");update();
+        intervals.push(setInterval(function(){var h=levels[state.level-1].h;addObject(h[Math.floor(Math.random()*h.length)],"hazard")},Math.max(420,1120-state.level*115)));
+        intervals.push(setInterval(function(){var p=powerups[Math.floor(Math.random()*powerups.length)];addObject(p,p[2])},4400));
+        intervals.push(setInterval(tick,50));
+        intervals.push(setInterval(function(){
+          state.time--;state.score+=5*state.level;state.shield=Math.max(0,state.shield-1);state.slow=Math.max(0,state.slow-1);if(state.level===5)state.charge=Math.min(100,state.charge+34);
+          if(state.time<=0){if(state.level<5)miniGame();else end(state.boss<=0)}
+          update()
+        },1000));
+        intervals.push(setInterval(function(){headline(events[Math.floor(Math.random()*events.length)])},5600))
+      }
+      function newGame(){
+        clearTimers();state={mode:"playing",level:1,time:24,lane:1,health:3,score:0,combo:0,shield:0,slow:0,boss:100,charge:0,muted:state.muted,objects:[]};
+        $("startScreen").classList.add("hidden");$("gameUi").classList.remove("hidden");headline("A calm Florida day. Suspicious.");drawPlayer();tone(520,.12);startLevel()
+      }
+      function miniGame(){
+        clearTimers();state.mode="mini";state.objects.forEach(removeObject);state.objects=[];var m=miniGames[state.level-1],caught=0,time=9,items=shuffle(m.items);
+        overlay.classList.remove("hidden");
+        function render(){
+          overlay.innerHTML='<section class="card" id="miniCard"><div class="kicker">BONUS ROUND · '+time+'s</div><h2>'+m.title+'</h2><p>'+m.copy+'</p><div class="mini-progress"><i style="width:'+(caught/m.need*100)+'%"></i></div><div class="mini-grid">'+items.map(function(icon,i){return '<button data-i="'+i+'">'+icon+'</button>'}).join("")+'</div><strong>'+caught+'/'+m.need+' secured</strong></section>';
+          overlay.querySelectorAll(".mini-grid button").forEach(function(btn){btn.onclick=function(){
+            var i=Number(btn.dataset.i),icon=items[i],correct=m.target==="supply"?supplies.indexOf(icon)>=0:icon===m.target;
+            if(correct){caught++;items.splice(i,1);tone(650,.06);if(navigator.vibrate)navigator.vibrate(20);if(caught>=m.need){state.score+=500;state.health=Math.min(3,state.health+1);setTimeout(nextLevel,350)}else render()}
+            else{time=Math.max(1,time-1);$("miniCard").classList.add("shake");setTimeout(render,250)}
+          }})
+        }
+        function nextLevel(){clearInterval(count);state.level++;headline("Bonus survived. Florida is mildly impressed.");startLevel()}
+        var count=setInterval(function(){time--;if(time<=0){clearInterval(count);state.level++;headline("Bonus failed. We will never speak of this again.");startLevel()}else render()},1000);
+        render()
+      }
+      function pause(){
+        if(state.mode!=="playing")return;clearTimers();state.mode="paused";overlay.classList.remove("hidden");
+        overlay.innerHTML='<section class="card"><div class="result-icon">🛑</div><p class="eyebrow">TEMPORARY EVACUATION</p><h2>PAUSED</h2><p>Even Florida Man occasionally hydrates.</p><button class="big-button" id="resume">RETURN TO CHAOS</button><button class="link-btn" id="quit">Quit to title</button></section>';
+        $("resume").onclick=startLevel;$("quit").onclick=showTitle
+      }
+      function end(won){
+        if(state.mode==="over")return;clearTimers();state.mode="over";state.objects.forEach(removeObject);state.objects=[];var best=Number(localStorage.getItem("florida-high")||0);if(state.score>best){best=Math.floor(state.score);localStorage.setItem("florida-high",best)}
+        overlay.classList.remove("hidden");overlay.innerHTML='<section class="card"><div class="result-icon">'+(won?"🏆":"🌀")+'</div><p class="eyebrow">'+(won?"CERTIFIED FLORIDA LEGEND":"LOCAL MAN DEFEATED")+'</p><h2>'+(won?"YOU OUT-FLORIDA'D FLORIDA":"CHAOS WINS")+'</h2><p>'+(won?"HOA Karen has retreated to Nextdoor. The flamingos are free.":"Witnesses describe the incident as extremely on brand.")+'</p><div class="final-score"><small>FINAL SCORE</small><strong>'+Math.floor(state.score).toLocaleString()+'</strong><span>Best: '+best.toLocaleString()+'</span></div><button class="big-button" id="again">PLAY AGAIN</button><button class="link-btn" id="title">Back to title</button></section>';
+        $("again").onclick=newGame;$("title").onclick=showTitle
+      }
+      function showTitle(){clearTimers();state.objects.forEach(removeObject);state.objects=[];state.mode="title";overlay.classList.add("hidden");$("gameUi").classList.add("hidden");$("startScreen").classList.remove("hidden");$("best").textContent="🏆 LOCAL LEGEND: "+Number(localStorage.getItem("florida-high")||0).toLocaleString();game.classList.remove("boss-on")}
+      function launch(){if(state.level!==5||state.charge<100||state.mode!=="playing")return;state.charge=0;state.boss=Math.max(0,state.boss-20);tone(92,.25);headline("GATOR LAUNCHED! Karen demands to see its permit.");if(navigator.vibrate)navigator.vibrate([60,35,90]);if(state.boss===0){state.score+=1500;headline("DIRECT HIT! The violation binder has been defeated.");setTimeout(function(){end(true)},550)}update()}
+      $("startBtn").onclick=newGame;$("left").onclick=function(){move(-1)};$("right").onclick=function(){move(1)};$("pause").onclick=pause;$("attack").onclick=launch;
+      $("soundBtn").onclick=function(){state.muted=!state.muted;this.textContent=state.muted?"🔇":"🔊";this.setAttribute("aria-label",state.muted?"Turn sound on":"Mute sound")};
+      game.addEventListener("touchstart",function(e){touchX=e.touches[0]?e.touches[0].clientX:null},{passive:true});
+      game.addEventListener("touchend",function(e){if(touchX===null)return;var x=e.changedTouches[0]?e.changedTouches[0].clientX:touchX,delta=x-touchX;if(Math.abs(delta)>34)move(delta>0?1:-1);touchX=null},{passive:true});
+      addEventListener("keydown",function(e){if(e.key==="ArrowLeft"||e.key.toLowerCase()==="a")move(-1);if(e.key==="ArrowRight"||e.key.toLowerCase()==="d")move(1);if(e.key===" "){e.preventDefault();launch()}if(e.key.toLowerCase()==="p"){state.mode==="playing"?pause():null}});
+      drawPlayer();update()
+    })();
+  </script>
+</body>
+</html>
