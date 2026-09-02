@@ -2,8 +2,8 @@
 ## Games by Ali
 
 
-https://github.com/alexandrastewart4097-sys/GameJam/blob/main/florida-man-survival.html
+https://alexandrastewart4097-sys.github.io/GameJam/florida-man-survival.html
 
-https://github.com/alexandrastewart4097-sys/GameJam/blob/main/index%20(1).
+https://alexandrastewart4097-sys.github.io/GameJam/index%20(1).
 
-https://github.com/alexandrastewart4097-sys/GameJam/blob/main/qr-code-generator.html
+https://alexandrastewart4097-sys.github.io/GameJam/qr-code-generator.html
